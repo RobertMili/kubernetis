@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: crud-app
+  labels:
+    app: crud-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: crud-app
+  template:
+    metadata:
+      labels:
+        app: crud-app
+    spec:
+      containers:
+        - name: crud-app
+          image: crud-app:latest
+          imagePullPolicy: Never # Use the local image
+          ports:
+            - containerPort: 8083  # Match the port exposed by the application
+          env:
+            - name: SPRING_DATASOURCE_URL
+              value: "jdbc:postgresql://postgres-service:5432/postgres"
+            - name: SPRING_DATASOURCE_USERNAME
+              value: "postgres"
+            - name: SPRING_DATASOURCE_PASSWORD
+              value: "postgres"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: crud-service
+spec:
+  selector:
+    app: crud-app
+  ports:
+    - protocol: TCP
+      port: 8083         # Expose the application on port 8083
+      targetPort: 8083   # Forward to the application's container port 8083
+  type: NodePort         # Use NodePort for simplicity
